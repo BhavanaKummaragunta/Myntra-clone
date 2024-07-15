@@ -1,0 +1,95 @@
+<!-- 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 -->
+<!-- https://huggingface.co/runwayml/stable-diffusion-v1-5?text=Headless+picture+of+blue+gown+with+frills%2C+blue+earrings+and+necklace+on+model -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outfit Visualizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Outfit Visualizer</h1>
+    <form id="generate-form">
+        <input type="text" id="prompt" placeholder="Enter your prompt" required>
+        <button type="submit">Generate Image</button>
+        <button type="button" id="voice-button">🎤 Speak</button>
+    </form>
+    <div id="image-container"></div>
+
+    <script>
+        document.getElementById('generate-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const prompt = document.getElementById('prompt').value;
+            const formattedPrompt = `Headless front picture of ${prompt} on model`;
+            const apiToken = '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'; // Replace with your Hugging Face API token
+
+            const response = await fetch('https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ inputs: formattedPrompt })
+            });
+
+            if (response.ok) {
+                const result = await response.blob();
+                const imageUrl = URL.createObjectURL(result);
+
+                const imageContainer = document.getElementById('image-container');
+                imageContainer.innerHTML = `
+                <img src="${imageUrl}" alt="Generated Image">
+                <button id="explore">Explore on Myntra</button>
+            `;
+                document.getElementById('explore-button').addEventListener('click', function () {
+                    // Perform actions when Explore button is clicked
+                    alert('Explore button clicked!');
+                    // Example: Open a new page or perform other actions related to the generated image
+                });
+            } else {
+                const error = await response.json();
+                alert(`Error: ${error.error}`);
+            }
+        });
+
+        document.getElementById('voice-button').addEventListener('click', function () {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            recognition.start();
+
+            recognition.onresult = function (event) {
+                const speechResult = event.results[0][0].transcript;
+                const formattedPrompt = `Headless picture ${speechResult} on model`;
+                document.getElementById('prompt').value = formattedPrompt;
+            };
+
+            recognition.onerror = function (event) {
+                console.error('Speech recognition error detected: ' + event.error);
+            };
+        });
+    </script>
+
+</body>
+
+</html>
